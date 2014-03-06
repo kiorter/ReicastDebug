@@ -42,6 +42,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -52,8 +53,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.Patterns;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -64,8 +67,10 @@ import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.CompoundButton.OnCheckedChangeListener;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -80,7 +85,6 @@ public class Debug extends Activity {
 	public static final String EXTRA_MESSAGE = "message";
 	private static final String PROPERTY_APP_VERSION = "appVersion";
 	private static final String PROPERTY_ON_SERVER_EXPIRATION_TIME = "onServerExpirationTimeMs";
-	static final String SERVER_URL = "http://twisted.dyndns.tv:3194/ReicastBot/plugin/register.php";
 	public static final long REGISTRATION_EXPIRY_TIME_MS = 1000 * 3600 * 24 * 30;
 	String SENDER_ID = "847786358946";
 	static final String TAG = "GCM::Service";
@@ -88,14 +92,11 @@ public class Debug extends Activity {
 	public static final String REG_ID = "registration_id";
 	AtomicInteger msgId = new AtomicInteger();
 
-	public static final String cloudUrl = "http://twisted.dyndns.tv:3194/ReicastBot/plugin/submit.php";
-	public static final String numberUrl = "http://twisted.dyndns.tv:3194/ReicastBot/plugin/number.php";
-	public static final String archiveUrl = "http://twisted.dyndns.tv:3194/ReicastBot/plugin/archive.php";
-
 	public static final String PREF_IDENTITY = "pref_user_identity";
 
 	private Context mContext;
 	private SharedPreferences mPrefs;
+	private String buildId = "";
 
 	private File sdcard = Environment.getExternalStorageDirectory();
 
@@ -154,9 +155,9 @@ public class Debug extends Activity {
 		};
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			mRequestArchive.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-					archiveUrl);
+					getString(R.string.archiveUrl));
 		} else {
-			mRequestArchive.execute(archiveUrl);
+			mRequestArchive.execute(getString(R.string.archiveUrl));
 		}
 		final EditText msgEntry = (EditText) findViewById(R.id.txt_message);
 		Button submit = (Button) findViewById(R.id.txt_button);
@@ -184,7 +185,7 @@ public class Debug extends Activity {
 				if (file != null) {
 					BufferedReader reader = new BufferedReader(
 							new InputStreamReader(file));
-					Log.d("reicast-debug", "Hash: " + reader.readLine());
+					buildId = reader.readLine();
 					file.close();
 				}
 			} catch (IOException ioe) {
@@ -192,6 +193,12 @@ public class Debug extends Activity {
 			} catch (NameNotFoundException e) {
 				e.printStackTrace();
 			}
+			Button about = (Button) findViewById(R.id.about_button);
+			about.setOnClickListener(new View.OnClickListener() {
+				public void onClick(View view) {
+					generateCommitLog(buildId);
+				}
+			});
 	}
 
 	public void generateErrorLog() {
@@ -203,6 +210,14 @@ public class Debug extends Activity {
 			mGenerateLogs.execute(sdcard.getAbsolutePath());
 		}
 
+	}
+
+	public void generateCommitLog(String buildId) {
+		String hash = buildId.substring(0, 7);
+		Intent about = new Intent(Debug.this, About.class);
+		about.setAction("reicast.emulator.ABOUT");
+		about.putExtra("hashtag", hash);
+		startActivity(about);
 	}
 
 	public class MessageAdapter extends BaseAdapter {
@@ -339,11 +354,10 @@ public class Debug extends Activity {
 				setRegistrationId(mContext, regid);
 				String possibleEmail = getAccountEmail();
 				if (possibleEmail != null) {
-					String serverUrl = SERVER_URL;
 					Map<String, String> user = new HashMap<String, String>();
 					user.put("regId", regid);
 					user.put("email", possibleEmail);
-					PostServer mPostServer = new PostServer(serverUrl);
+					PostServer mPostServer = new PostServer(getString(R.string.serverUrl));
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						mPostServer.executeOnExecutor(
 								AsyncTask.THREAD_POOL_EXECUTOR, user);
@@ -473,7 +487,7 @@ public class Debug extends Activity {
 				if (hasIdentitiy) {
 					mPairs.add(new BasicNameValuePair("message", params[0]));
 					HttpClient client = new DefaultHttpClient();
-					HttpPost post = new HttpPost(cloudUrl);
+					HttpPost post = new HttpPost(getString(R.string.cloudUrl));
 					post.setEntity(new UrlEncodedFormEntity(mPairs));
 					return client.execute(post, new ResponseHandler<Object>() {
 
@@ -521,7 +535,7 @@ public class Debug extends Activity {
 				ArrayList<NameValuePair> mPairs = new ArrayList<NameValuePair>();
 				mPairs.add(new BasicNameValuePair("gcm_regid", params[0]));
 				HttpClient client = new DefaultHttpClient();
-				HttpPost post = new HttpPost(numberUrl);
+				HttpPost post = new HttpPost(getString(R.string.numberUrl));
 				post.setEntity(new UrlEncodedFormEntity(mPairs));
 				return client.execute(post, new ResponseHandler<Object>() {
 
@@ -629,6 +643,32 @@ public class Debug extends Activity {
 
 		}
 		return null;
+	}
+
+	public static void customNotify(Activity activity, int icon, int message) {
+		LayoutInflater inflater = activity.getLayoutInflater();
+		View layout = inflater.inflate(R.layout.toast_layout,
+				(ViewGroup) activity.findViewById(R.id.toast_layout_root));
+
+		ImageView image = (ImageView) layout.findViewById(R.id.image);
+		if (icon != -1) {
+			image.setImageResource(icon);
+		} else {
+			image.setImageResource(R.drawable.ic_launcher);
+		}
+		
+		TextView text = (TextView) layout.findViewById(R.id.text);
+		text.setText(activity.getString(message));
+
+		DisplayMetrics metrics = activity.getResources().getDisplayMetrics();
+		final float scale = metrics.density;
+		int toastPixels = (int) ((metrics.widthPixels * scale + 0.5f) / 14);
+
+		Toast toast = new Toast(activity);
+		toast.setGravity(Gravity.BOTTOM, 0, toastPixels);
+		toast.setDuration(Toast.LENGTH_SHORT);
+		toast.setView(layout);
+		toast.show();
 	}
 
 	@Override

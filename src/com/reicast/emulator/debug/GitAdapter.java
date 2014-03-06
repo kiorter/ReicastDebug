@@ -86,8 +86,6 @@ import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
 import com.nostra13.universalimageloader.core.assist.ImageScaleType;
-import com.reicast.emulator.MainActivity;
-import com.reicast.emulator.R;
 
 public class GitAdapter extends BaseAdapter {
 
@@ -97,7 +95,7 @@ public class GitAdapter extends BaseAdapter {
 	private DisplayImageOptions options;
 
 	public GitAdapter(Activity a, ArrayList<HashMap<String, String>> d) {
-		this.activity = a;
+		activity = a;
 		this.data = d;
 		this.inflater = (LayoutInflater) activity
 				.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -172,7 +170,7 @@ public class GitAdapter extends BaseAdapter {
 
 	private static void callGithubVerification(String sha) {
 		String hash = sha.substring(0, 7);
-		Intent github = new Intent("com.reicast.emulator.debug.GitHash");
+		Intent github = new Intent(activity, GitHash.class);
 		github.setAction("reicast.emulator.GITHUB");
 		github.putExtra("hashtag", hash);
 		activity.startActivity(github);
@@ -196,7 +194,6 @@ public class GitAdapter extends BaseAdapter {
 						return;
 					}
 				});
-		if (MainActivity.debugUser) {
 			builder.setNegativeButton("Download",
 					new DialogInterface.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
@@ -205,7 +202,6 @@ public class GitAdapter extends BaseAdapter {
 							return;
 						}
 					});
-		}
 		builder.create().show();
 	}
 

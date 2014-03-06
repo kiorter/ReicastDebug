@@ -62,8 +62,8 @@ public class GitHash extends Activity {
 
 		@Override
 		protected File doInBackground(String... paths) {
-			String apk = "reicast-lkedition-" + paths[0] + ".apk";
-			String file = "http://twisted.dyndns.tv:3194/Dreamcast/compiled/" + apk;
+			String apk = mContext.getString(R.string.apk, paths[0]);
+			String file = mContext.getString(R.string.apk_url, apk);
 			File SDCard = mContext.getExternalCacheDir();
 			File apkFile = new File(SDCard, apk);
 			try {

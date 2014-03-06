@@ -53,7 +53,7 @@
  * subject to to the terms and conditions of the Apache License, Version 2.0.
  */
 
-package com.reicast.emulator;
+package com.reicast.emulator.debug;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -73,6 +73,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.reicast.emulator.debug.GitHash.NetworkHandler;
+
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -80,11 +82,7 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.text.util.Linkify;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
@@ -92,11 +90,8 @@ import android.widget.SlidingDrawer;
 import android.widget.SlidingDrawer.OnDrawerOpenListener;
 import android.widget.TextView;
 
-import com.reicast.emulator.config.Config;
-import com.reicast.emulator.debug.GitAdapter;
-
 @SuppressWarnings("deprecation")
-public class AboutFragment extends Fragment {
+public class About extends Activity {
 
 	SlidingDrawer slidingGithub;
 	private ListView list;
@@ -104,73 +99,51 @@ public class AboutFragment extends Fragment {
 	private Handler handler;
 	String buildId = "";
 
-	private Activity parentActivity;
-
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		// Inflate the layout for this fragment
-		return inflater.inflate(R.layout.about_fragment, container, false);
-	}
-
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		parentActivity = getActivity();
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.about_fragment);
 		handler = new Handler();
 
-		try {
-			InputStream file = getResources().getAssets().open("build");
-			if (file != null) {
-				BufferedReader reader = new BufferedReader(
-						new InputStreamReader(file));
-				buildId = reader.readLine();
-				file.close();
-			}
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
+		Bundle extras = getIntent().getExtras();
+		if (extras != null) {
+			buildId = extras.getString("hashtag");
 		}
 
 		try {
-			String versionName = parentActivity.getPackageManager()
-					.getPackageInfo(parentActivity.getPackageName(), 0).versionName;
-			int versionCode = parentActivity.getPackageManager()
-					.getPackageInfo(parentActivity.getPackageName(), 0).versionCode;
-			TextView version = (TextView) getView().findViewById(
+			String versionName = getPackageManager()
+					.getPackageInfo(getPackageName(), 0).versionName;
+			int versionCode = getPackageManager()
+					.getPackageInfo(getPackageName(), 0).versionCode;
+			TextView version = (TextView) findViewById(
 					R.id.revision_text);
-			String revision = getString(R.string.revision_text,
-					versionName, String.valueOf(versionCode));
+			String revision = getString(R.string.revision_text, versionName,
+					String.valueOf(versionCode));
 			if (!buildId.equals("")) {
-				revision = parentActivity.getString(R.string.revision_text,
-						versionName, buildId.substring(0,7));
+				revision = getString(R.string.revision_text,
+						versionName, buildId.substring(0, 7));
 			}
 			version.setText(revision);
 		} catch (NameNotFoundException e) {
 			e.printStackTrace();
 		}
-		
-		TextView website = (TextView) getView().findViewById(
-				R.id.beta_text);
-		Linkify.addLinks(website, Linkify.ALL);
 
-		slidingGithub = (SlidingDrawer) getView().findViewById(R.id.slidingGithub);
-		if (MainActivity.debugUser) {
-			slidingGithub.setOnDrawerOpenListener(new OnDrawerOpenListener() {
-				@TargetApi(Build.VERSION_CODES.HONEYCOMB)
-				public void onDrawerOpened() {
-					String git = getString(R.string.git_api);
-					retrieveGitTask queryGithub = new retrieveGitTask();
-					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-						queryGithub.executeOnExecutor(
-								AsyncTask.THREAD_POOL_EXECUTOR, git);
-					} else {
-						queryGithub.execute(git);
-					}
+		slidingGithub = (SlidingDrawer) findViewById(
+				R.id.slidingGithub);
+		slidingGithub.setOnDrawerOpenListener(new OnDrawerOpenListener() {
+			@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+			public void onDrawerOpened() {
+				String git = getString(R.string.git_api);
+				retrieveGitTask queryGithub = new retrieveGitTask();
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+					queryGithub.executeOnExecutor(
+							AsyncTask.THREAD_POOL_EXECUTOR, git);
+				} else {
+					queryGithub.execute(git);
 				}
-			});
-			slidingGithub.open();
-		} else {
-			slidingGithub.setVisibility(View.GONE);
-		}
+			}
+		});
+		slidingGithub.open();
 	}
 
 	public class retrieveGitTask extends
@@ -178,7 +151,7 @@ public class AboutFragment extends Fragment {
 
 		@Override
 		protected void onPreExecute() {
-			
+
 		}
 
 		@Override
@@ -257,7 +230,8 @@ public class AboutFragment extends Fragment {
 			} catch (JSONException e) {
 				handler.post(new Runnable() {
 					public void run() {
-						Config.customNotify(parentActivity, R.drawable.ic_github, R.string.git_broken);
+						Debug.customNotify(About.this,
+								R.drawable.ic_github, R.string.git_broken);
 						slidingGithub.close();
 					}
 				});
@@ -265,7 +239,8 @@ public class AboutFragment extends Fragment {
 			} catch (Exception e) {
 				handler.post(new Runnable() {
 					public void run() {
-						Config.customNotify(parentActivity, R.drawable.ic_github, R.string.git_broken);
+						Debug.customNotify(About.this,
+								R.drawable.ic_github, R.string.git_broken);
 						slidingGithub.close();
 					}
 				});
@@ -279,10 +254,10 @@ public class AboutFragment extends Fragment {
 		protected void onPostExecute(
 				ArrayList<HashMap<String, String>> commitList) {
 			if (commitList != null && commitList.size() > 0) {
-				list = (ListView) getView().findViewById(R.id.list);
+				list = (ListView) findViewById(R.id.list);
 				list.setSelector(R.drawable.list_selector);
 				list.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-				adapter = new GitAdapter(parentActivity, commitList);
+				adapter = new GitAdapter(About.this, commitList);
 				// Set adapter as specified collection
 				list.setAdapter(adapter);
 
@@ -296,7 +271,8 @@ public class AboutFragment extends Fragment {
 		}
 	}
 
-	private JSONArray getContent(String urlString) throws IOException, JSONException {
+	private JSONArray getContent(String urlString) throws IOException,
+			JSONException {
 		StringBuilder builder = new StringBuilder();
 		HttpClient client = new DefaultHttpClient();
 		HttpGet httpGet = new HttpGet(urlString);
