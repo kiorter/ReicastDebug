@@ -7,7 +7,7 @@
     <string name="menu_debug">Submit Error Logs</string>
     <string name="menu_about">View Version Details</string>
 
-    <string name="revision_text">Version: %1$s [LK-%2$s]</string>
+    <string name="revision_text">Version: %1$s [%2$s]</string>
     <string name="git_broken">GitHub Native is unavailable!</string>
 
     <string name="textOn">ON</string>

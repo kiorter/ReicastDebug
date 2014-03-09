@@ -2,14 +2,4 @@
 
     <string name="app_name">reicast debug</string>
 
-    <string name="git_api">https://api.github.com/repos/NoblesseOblige/reicast-emulator/commits</string>
-    <string name="git_issues">https://github.com/NoblesseOblige/reicast-emulator/issues/</string>
-    <string name="log_url">http://twisted.dyndns.tv:3194/Dreamcast/report/submit.php</string>
-    <string name="cloudUrl">http://twisted.dyndns.tv:3194/Dreamcast/plugin/submit.php</string>
-	<string name="numberUrl">http://twisted.dyndns.tv:3194/Dreamcast/plugin/number.php</string>
-	<string name="archiveUrl">http://twisted.dyndns.tv:3194/Dreamcast/plugin/archive.php</string>
-	<string name="serverUrl">http://twisted.dyndns.tv:3194/Dreamcast/plugin/register.php</string>
-    <string name="apk">reicast-lkedition-%1$s.apk</string>
-    <string name="apk_url">http://twisted.dyndns.tv:3194/Dreamcast/compiled/%1$s</string>
-
 </resources>

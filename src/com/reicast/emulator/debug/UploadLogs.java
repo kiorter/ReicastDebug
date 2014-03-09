@@ -69,7 +69,7 @@ public class UploadLogs extends AsyncTask<String, Integer, Object> {
 	@SuppressLint("NewApi")
 	protected void onPreExecute() {
 		if (logUrl == null || logUrl.equals(null)) {
-			logUrl = mContext.getString(R.string.log_url);
+			logUrl = Config.log_url;
 		}
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
 			StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
@@ -132,7 +132,7 @@ public class UploadLogs extends AsyncTask<String, Integer, Object> {
 				clipboard.setText(logLink);
 			}
 			Intent browserIntent = new Intent(Intent.ACTION_VIEW,
-					Uri.parse(mContext.getString(R.string.git_issues)));
+					Uri.parse(Config.git_issues));
 			mContext.startActivity(browserIntent);
 		}
 	}

@@ -62,8 +62,8 @@ public class GitHash extends Activity {
 
 		@Override
 		protected File doInBackground(String... paths) {
-			String apk = mContext.getString(R.string.apk, paths[0]);
-			String file = mContext.getString(R.string.apk_url, apk);
+			String apk = Config.getApkName(paths[0]);
+			String file = Config.getApkUrl(apk);
 			File SDCard = mContext.getExternalCacheDir();
 			File apkFile = new File(SDCard, apk);
 			try {

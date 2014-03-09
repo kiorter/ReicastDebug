@@ -108,6 +108,26 @@ public class Debug extends Activity {
 		setContentView(R.layout.dialog_message);
 		mContext = this.getApplicationContext();
 		mPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
+		try {
+			Resources res = getPackageManager().getResourcesForApplication("com.reicast.emulator");
+			InputStream file = res.getAssets().open("build");
+			if (file != null) {
+				BufferedReader reader = new BufferedReader(
+						new InputStreamReader(file));
+				buildId = reader.readLine();
+				Config.isCustom = false;
+				if (buildId.startsWith("lk-")) {
+					Config.isCustom = true;
+					buildId = buildId.replace("lk-", "");
+				}
+				Config.setVersioning();
+				file.close();
+			}
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		} catch (NameNotFoundException e) {
+			e.printStackTrace();
+		}
 		int resultCode = GooglePlayServicesUtil
 				.isGooglePlayServicesAvailable(mContext);
 		if (resultCode == ConnectionResult.SUCCESS) {
@@ -155,9 +175,9 @@ public class Debug extends Activity {
 		};
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 			mRequestArchive.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-					getString(R.string.archiveUrl));
+					Config.archiveUrl);
 		} else {
-			mRequestArchive.execute(getString(R.string.archiveUrl));
+			mRequestArchive.execute(Config.archiveUrl);
 		}
 		final EditText msgEntry = (EditText) findViewById(R.id.txt_message);
 		Button submit = (Button) findViewById(R.id.txt_button);
@@ -179,20 +199,6 @@ public class Debug extends Activity {
 					generateErrorLog();
 				}
 			});
-			try {
-				Resources res = getPackageManager().getResourcesForApplication("com.reicast.emulator");
-				InputStream file = res.getAssets().open("build");
-				if (file != null) {
-					BufferedReader reader = new BufferedReader(
-							new InputStreamReader(file));
-					buildId = reader.readLine();
-					file.close();
-				}
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			} catch (NameNotFoundException e) {
-				e.printStackTrace();
-			}
 			Button about = (Button) findViewById(R.id.about_button);
 			about.setOnClickListener(new View.OnClickListener() {
 				public void onClick(View view) {
@@ -213,10 +219,9 @@ public class Debug extends Activity {
 	}
 
 	public void generateCommitLog(String buildId) {
-		String hash = buildId.substring(0, 7);
 		Intent about = new Intent(Debug.this, About.class);
 		about.setAction("reicast.emulator.ABOUT");
-		about.putExtra("hashtag", hash);
+		about.putExtra("hashtag", buildId);
 		startActivity(about);
 	}
 
@@ -357,7 +362,7 @@ public class Debug extends Activity {
 					Map<String, String> user = new HashMap<String, String>();
 					user.put("regId", regid);
 					user.put("email", possibleEmail);
-					PostServer mPostServer = new PostServer(getString(R.string.serverUrl));
+					PostServer mPostServer = new PostServer(Config.serverUrl);
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 						mPostServer.executeOnExecutor(
 								AsyncTask.THREAD_POOL_EXECUTOR, user);
@@ -487,7 +492,7 @@ public class Debug extends Activity {
 				if (hasIdentitiy) {
 					mPairs.add(new BasicNameValuePair("message", params[0]));
 					HttpClient client = new DefaultHttpClient();
-					HttpPost post = new HttpPost(getString(R.string.cloudUrl));
+					HttpPost post = new HttpPost(Config.cloudUrl);
 					post.setEntity(new UrlEncodedFormEntity(mPairs));
 					return client.execute(post, new ResponseHandler<Object>() {
 
@@ -535,7 +540,7 @@ public class Debug extends Activity {
 				ArrayList<NameValuePair> mPairs = new ArrayList<NameValuePair>();
 				mPairs.add(new BasicNameValuePair("gcm_regid", params[0]));
 				HttpClient client = new DefaultHttpClient();
-				HttpPost post = new HttpPost(getString(R.string.numberUrl));
+				HttpPost post = new HttpPost(Config.numberUrl);
 				post.setEntity(new UrlEncodedFormEntity(mPairs));
 				return client.execute(post, new ResponseHandler<Object>() {
 

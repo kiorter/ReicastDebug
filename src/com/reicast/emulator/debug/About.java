@@ -120,8 +120,12 @@ public class About extends Activity {
 			String revision = getString(R.string.revision_text, versionName,
 					String.valueOf(versionCode));
 			if (!buildId.equals("")) {
+				String ident = buildId.substring(0, 7);
+				if (Config.isCustom) {
+					ident = "LK-" + ident;
+				}
 				revision = getString(R.string.revision_text,
-						versionName, buildId.substring(0, 7));
+						versionName, ident);
 			}
 			version.setText(revision);
 		} catch (NameNotFoundException e) {
@@ -133,13 +137,12 @@ public class About extends Activity {
 		slidingGithub.setOnDrawerOpenListener(new OnDrawerOpenListener() {
 			@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 			public void onDrawerOpened() {
-				String git = getString(R.string.git_api);
 				retrieveGitTask queryGithub = new retrieveGitTask();
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
 					queryGithub.executeOnExecutor(
-							AsyncTask.THREAD_POOL_EXECUTOR, git);
+							AsyncTask.THREAD_POOL_EXECUTOR, Config.git_api);
 				} else {
-					queryGithub.execute(git);
+					queryGithub.execute(Config.git_api);
 				}
 			}
 		});
