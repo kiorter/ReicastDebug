@@ -16,19 +16,15 @@ public class Config {
 			git_api = "https://api.github.com/repos/NoblesseOblige/reicast-emulator/commits";
 			git_issues = "https://github.com/NoblesseOblige/reicast-emulator/issues/";
 			log_url = "http://twisted.dyndns.tv:3194/Dreamcast/report/submit.php";
-			cloudUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/submit.php";
-			numberUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/number.php";
-			archiveUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/archive.php";
-			serverUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/register.php";
 		} else {
-			git_api = "https://api.github.com/repos/NoblesseOblige/reicast-emulator/commits";
-			git_issues = "https://github.com/NoblesseOblige/reicast-emulator/issues/";
-			log_url = "http://twisted.dyndns.tv:3194/Dreamcast/report/submit.php";
-			cloudUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/submit.php";
-			numberUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/number.php";
-			archiveUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/archive.php";
-			serverUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/register.php";
+			git_api = "https://api.github.com/repos/reicast/reicast-emulator/commits";
+			git_issues = "https://github.com/reicast/reicast-emulator/issues/";
+			log_url = "http://twisted.dyndns.tv:3194/ReicastBot/report/submit.php";
 		}
+		cloudUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/submit.php";
+		numberUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/number.php";
+		archiveUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/archive.php";
+		serverUrl = "http://twisted.dyndns.tv:3194/Dreamcast/plugin/register.php";
 	}
 
 	public static String getApkName(String build) {
